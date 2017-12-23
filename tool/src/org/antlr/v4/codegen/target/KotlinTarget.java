@@ -96,6 +96,28 @@ public class KotlinTarget extends Target {
 				// 5C is the hex code for the \ itself
 				return ((String)o).replace("\\u", "\\u005Cu");
 			}
+			if (o.equals("\\f")) {
+				return "\\u000C";
+			}
+			if (formatString == null && (o instanceof String)){
+				String s = (String)o;
+				if (s.startsWith("\\")) {
+					boolean ok = true;
+					for (int i=1;i<s.length() && ok;i++) {
+						ok = Character.isDigit(s.charAt(i));
+					}
+					if (ok) {
+						int n = Integer.parseInt(s.substring(1));
+						String hexPart = Integer.toHexString(n);
+						String res = "\\u";
+						for (int i=0;i<4-hexPart.length();i++) {
+							res = res + "0";
+						}
+						res += hexPart;
+						return res;
+					}
+				}
+			}
 
 			return super.toString(o, formatString, locale);
 		}

@@ -842,31 +842,22 @@ package <lexerFile.genPackage>
 <endif>
 <namedActions.header>
 import com.strumenta.kotlinmultiplatform.Arrays
-import org.antlr.v4.kotlinruntime.Lexer
-import org.antlr.v4.kotlinruntime.CharStream
-import org.antlr.v4.kotlinruntime.Token
-import org.antlr.v4.kotlinruntime.TokenStream
-import org.antlr.v4.kotlinruntime.*
-import org.antlr.v4.kotlinruntime.atn.*
-import org.antlr.v4.kotlinruntime.dfa.DFA
-import org.antlr.v4.kotlinruntime.misc.*
+import org.antlr.v4.kotlinruntime.facade.*
 
 <lexer>
 >>
 
 Lexer(lexer, atn, actionFuncs, sempredFuncs, superClass) ::= <<
-class <lexer.name> : <superClass; null="Lexer"> {
+class <lexer.name>(val input: CharStream) : <superClass; null="Lexer">(input) {
 	// TODO Verify the runtime version is correct
 
 	companion object {
 		lateinit var decisionToDFA : Array\<DFA>
 		val sharedContextCache = PredictionContextCache()
-		val ATN : ATN = ATNDeserializer().deserialize(serializedATN.toCharArray())
 
 		<vocabulary(lexer.literalNames, lexer.symbolicNames)>
 
-		init {
-        }
+		<atn>
 	}
 
 	<if(lexer.tokens)>
@@ -896,31 +887,13 @@ class <lexer.name> : <superClass; null="Lexer"> {
 
 	<namedActions.members>
 
-	//public <lexer.name>(CharStream input) {
-	//	super(input);
-	//	_interp = new LexerATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
-	//}
+	init {
+		interpreter = LexerATNSimulator(this, ATN, decisionToDFA, sharedContextCache)
+	}
 
-	//@Override
-	//public String getGrammarFileName() { return "<lexer.grammarFileName>"; }
-
-	//@Override
-	//public String[] getRuleNames() { return ruleNames; }
-
-	//@Override
-	//public String getSerializedATN() { return _serializedATN; }
-
-	//@Override
-	//public String[] getChannelNames() { return channelNames; }
-
-	//@Override
-	//public String[] getModeNames() { return modeNames; }
-
-	//@Override
-	//public ATN getATN() { return _ATN; }
+	override val grammarFileName = "<lexer.grammarFileName>"
 
 	<dumpActions(lexer, "", actionFuncs, sempredFuncs)>
-	<atn>
 }
 >>
 
@@ -938,16 +911,14 @@ public static final String _serializedATN = Utils.join(
 );
 <else>
 <! only one segment, can be inlined !>
-public static final String _serializedATN =
-	"<model.serialized; wrap={"+<\n><\t>"}>";
+val serializedATN =
+	"<model.serialized; wrap={"+<\n><\t>"}>"
 <endif>
-public static final ATN _ATN =
-	new ATNDeserializer().deserialize(_serializedATN.toCharArray());
-static {
-	_decisionToDFA = new DFA[_ATN.getNumberOfDecisions()];
-	for (int i = 0; i \< _ATN.getNumberOfDecisions(); i++) {
-		_decisionToDFA[i] = new DFA(_ATN.getDecisionState(i), i);
-	}
+val ATN = ATNDeserializer().deserialize(serializedATN)
+init {
+	decisionToDFA = Array\<DFA>(ATN.numberOfDecisions, {
+		DFA(ATN.getDecisionState(it), it)
+	})
 <!	org.antlr.v4.tool.DOTGenerator dot = new org.antlr.v4.tool.DOTGenerator(null);!>
 <!	System.out.println(dot.getDOT(_ATN.decisionToState.get(0), ruleNames, false));!>
 <!	System.out.println(dot.getDOT(_ATN.ruleToStartState[2], ruleNames, false));!>
