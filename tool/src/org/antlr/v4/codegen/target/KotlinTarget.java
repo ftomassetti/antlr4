@@ -43,6 +43,21 @@ public class KotlinTarget extends Target {
 
 	public KotlinTarget(CodeGenerator gen) {
 		super(gen, "Kotlin");
+		targetCharValueEscape = new String[255];
+		targetCharValueEscape['\n'] = "\\n";
+		targetCharValueEscape['\r'] = "\\r";
+		targetCharValueEscape['\t'] = "\\t";
+		targetCharValueEscape['\b'] = "\\b";
+		//targetCharValueEscape['\f'] = "\\u000c";
+		targetCharValueEscape['\\'] = "\\\\";
+		targetCharValueEscape['\''] = "\\'";
+		targetCharValueEscape[10] = "\\u000a";
+		targetCharValueEscape[11] = "\\u000b";
+		targetCharValueEscape[12] = "\\u000c";
+		targetCharValueEscape[13] = "\\u000d";
+		targetCharValueEscape[14] = "\\u000e";
+		targetCharValueEscape[15] = "\\u000f";
+		targetCharValueEscape['"'] = "\\\"";
 	}
 
     @Override
@@ -108,15 +123,25 @@ public class KotlinTarget extends Target {
 					}
 					if (ok) {
 						int n = Integer.parseInt(s.substring(1));
-						String hexPart = Integer.toHexString(n);
-						String res = "\\u";
-						for (int i=0;i<4-hexPart.length();i++) {
-							res = res + "0";
-						}
-						res += hexPart;
-						return res;
+						//if (n == 14) n = 12;
+						return String.format("\\u%04X", n);
+//						String hexPart = Integer.toHexString(n);
+//						String res = "\\u";
+//						for (int i=0;i<4-hexPart.length();i++) {
+//							res = res + "0";
+//						}
+//						res += hexPart;
+//						if (res.equals("\\u000d")) {
+//							System.out.println("GOT AAA " + o + " -> " + res);
+//						}
+//						return res;
 					}
 				}
+			}
+
+			String res = super.toString(o, formatString, locale);
+			if (res.equals("\\u000d")) {
+				System.out.println("GOT ZZZ " + o + " -> " + res);
 			}
 
 			return super.toString(o, formatString, locale);
@@ -126,6 +151,7 @@ public class KotlinTarget extends Target {
 
 	@Override
 	protected void appendUnicodeEscapedCodePoint(int codePoint, StringBuilder sb) {
+		System.out.println("AAAA "+codePoint);
 		UnicodeEscapes.appendJavaStyleEscapedCodePoint(codePoint, sb);
 	}
 }

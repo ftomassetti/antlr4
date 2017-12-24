@@ -17,13 +17,17 @@ import java.util.List;
 public class SerializedATN extends OutputModelObject {
 	// TODO: make this into a kind of decl or multiple?
 	public List<String> serialized;
+	public List<Integer> serializedIntegers;
 	public SerializedATN(OutputModelFactory factory, ATN atn) {
 		super(factory);
 		IntegerList data = ATNSerializer.getSerialized(atn);
 		serialized = new ArrayList<String>(data.size());
+		serializedIntegers = new ArrayList<Integer>(data.size());
 		for (int c : data.toArray()) {
 			String encoded = factory.getGenerator().getTarget().encodeIntAsCharEscape(c == -1 ? Character.MAX_VALUE : c);
+			System.out.println("ENCODING "+c+" as "+encoded);
 			serialized.add(encoded);
+			serializedIntegers.add(c);
 		}
 //		System.out.println(ATNSerializer.getDecoded(factory.getGrammar(), atn));
 	}

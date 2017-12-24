@@ -848,7 +848,7 @@ import org.antlr.v4.kotlinruntime.facade.*
 >>
 
 Lexer(lexer, atn, actionFuncs, sempredFuncs, superClass) ::= <<
-class <lexer.name>(val input: CharStream) : <superClass; null="Lexer">(input) {
+class <lexer.name>(val input: String) : <superClass; null="Lexer">("<lexer.grammarFileName>", input) {
 	// TODO Verify the runtime version is correct
 
 	companion object {
@@ -888,10 +888,8 @@ class <lexer.name>(val input: CharStream) : <superClass; null="Lexer">(input) {
 	<namedActions.members>
 
 	init {
-		interpreter = LexerATNSimulator(this, ATN, decisionToDFA, sharedContextCache)
+		setInterpreter(createLexerATNSimulator(this, ATN, decisionToDFA, sharedContextCache))
 	}
-
-	override val grammarFileName = "<lexer.grammarFileName>"
 
 	<dumpActions(lexer, "", actionFuncs, sempredFuncs)>
 }
@@ -911,13 +909,13 @@ public static final String _serializedATN = Utils.join(
 );
 <else>
 <! only one segment, can be inlined !>
-val serializedATN =
-	"<model.serialized; wrap={"+<\n><\t>"}>"
+val serializedIntegersATN =
+	arrayOf(<model.serializedIntegers; wrap={<\n><\t>}, separator=",">)
 <endif>
-val ATN = ATNDeserializer().deserialize(serializedATN)
+val ATN = ATNDeserializer().deserializeIntegers(serializedIntegersATN)
 init {
-	decisionToDFA = Array\<DFA>(ATN.numberOfDecisions, {
-		DFA(ATN.getDecisionState(it), it)
+	decisionToDFA = Array\<DFA>(ATN.getNumberOfDecisions(), {
+		createDFA(ATN.getDecisionState(it), it)
 	})
 <!	org.antlr.v4.tool.DOTGenerator dot = new org.antlr.v4.tool.DOTGenerator(null);!>
 <!	System.out.println(dot.getDOT(_ATN.decisionToState.get(0), ruleNames, false));!>
